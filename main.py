@@ -11,15 +11,19 @@ from mlxtend.frequent_patterns import apriori, association_rules
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
+import os
 
-# 设置中文字体
-plt.rcParams['font.sans-serif'] = ['AppleGothic']  # macOS中文字体
+# 设置中文字体，确保 macOS 上有相应字库
+plt.rcParams['font.sans-serif'] = ['SimHei', 'Arial Unicode MS']  # macOS中文字体
 plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
+
+# 确保结果目录存在
+os.makedirs('./result', exist_ok=True)
 
 # ====================== 数据预处理 ======================
 def load_data():
     # 读取数据并添加列名
-    df = pd.read_csv('UserBehavior.csv', 
+    df = pd.read_csv('dataset/UserBehavior.csv', 
                     names=['user_id', 'item_id', 'category_id', 'behavior', 'timestamp'])
     
     # 时间戳转换（处理秒级时间戳）
@@ -116,23 +120,29 @@ def plot_behavioral_analysis(results):
     plt.title('用户行为类型分布')
     plt.xlabel('行为类型')
     plt.ylabel('发生次数')
-    plt.xticks(rotation=0)
-    plt.show()
+    plt.xticks(ticks=range(4), labels=['浏览', '加购', '收藏', '购买'], rotation=0)
+    plt.savefig('./result/behavior_distribution.png')
+    plt.close()
     
     # 转化漏斗
     plt.figure(figsize=(8, 6))
     sns.lineplot(x=range(4), y='overall_rate', data=results['funnel'], 
                 marker='o', color='darkorange')
     plt.title('用户行为转化漏斗')
-    plt.xticks([0,1,2,3], ['浏览', '加购', '收藏', '购买'])
+    plt.xticks(ticks=range(4), labels=['浏览', '加购', '收藏', '购买'])
     plt.ylabel('总体转化率')
-    plt.show()
+    plt.savefig('./result/conversion_funnel.png')
+    plt.close()
     
     # 时间模式热力图
     plt.figure(figsize=(12, 6))
     sns.heatmap(results['time_pattern'], cmap='YlGnBu')
     plt.title('用户行为时间分布热力图')
-    plt.show()
+    plt.xlabel('小时')
+    plt.ylabel('行为类型')
+    plt.yticks(ticks=range(4), labels=['浏览', '加购', '收藏', '购买'], rotation=0)
+    plt.savefig('./result/time_pattern_heatmap.png')
+    plt.close()
 
 def plot_clusters(cluster_profile):
     """可视化用户分群结果"""
@@ -146,7 +156,9 @@ def plot_clusters(cluster_profile):
     plt.title('用户分群特征雷达图')
     plt.xlabel('指标')
     plt.ylabel('标准化值')
-    plt.show()
+    plt.xticks(ticks=range(3), labels=['最近一次活动', '行为频率', '购买次数'])
+    plt.savefig('./result/cluster_radar_chart.png')
+    plt.close()
 
 # ====================== 高级分析 ======================  
 def predict_purchase(df):
@@ -180,7 +192,7 @@ def predict_purchase(df):
     # 模型评估
     print(classification_report(y_test, rf.predict(X_test)))
     
-    return rf
+    return rf, X_test, y_test
 
 # ====================== 主程序 ======================
 if __name__ == "__main__":
@@ -197,12 +209,17 @@ if __name__ == "__main__":
     
     # 模式挖掘
     mining_results = pattern_mining(df)
-    print("Top关联规则：\n", mining_results['association_rules'].sort_values('lift', ascending=False).head())
+    print("Top 5 关联规则：")
+    print("这些规则显示了用户购买不同商品类目之间的关联关系，帮助我们理解用户的购买模式。")
+    print(mining_results['association_rules'].sort_values('lift', ascending=False).head())
     
     # 购买预测
-    purchase_model = predict_purchase(df)
+    purchase_model, X_test, y_test = predict_purchase(df)
+    print("购买预测模型评估：")
+    print("以下是随机森林模型的分类报告，显示了模型在测试集上的精度、召回率和F1分数。")
+    print(classification_report(y_test, purchase_model.predict(X_test)))
     
     # 保存分析结果（供论文使用）
-    behavior_results['funnel'].to_csv('result/funnel_analysis.csv')
-    cluster_results['rfm'].to_csv('result/user_clusters.csv')
-    mining_results['association_rules'].to_csv('result/association_rules.csv')
+    behavior_results['funnel'].to_csv('./result/funnel_analysis.csv')
+    cluster_results['rfm'].to_csv('./result/user_clusters.csv')
+    mining_results['association_rules'].to_csv('./result/association_rules.csv')
