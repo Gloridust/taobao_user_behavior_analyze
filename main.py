@@ -1,3 +1,8 @@
+"""
+淘宝用户行为分析
+数据分析与可视化
+"""
+
 import os
 import pandas as pd
 import numpy as np
@@ -34,6 +39,7 @@ from lifetimes import BetaGeoFitter, GammaGammaFitter
 from lifetimes.plotting import plot_probability_alive_matrix
 from lifetimes.utils import summary_data_from_transaction_data
 
+
 # 设置中文显示
 plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
 plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
@@ -66,7 +72,102 @@ if not os.path.exists(os.path.join(RESULT_DIR, 'tables')):
 sns.set(style="whitegrid")
 plt.style.use('ggplot')
 
-
+def basket_analysis(df):
+    """
+    购物篮分析（关联规则挖掘）
+    """
+    logger.info("开始购物篮分析...")
+    
+    # 只考虑购买行为
+    buy_df = df[df['behavior_type'] == 'buy']
+    
+    # 如果购买记录太少，则跳过此分析
+    if len(buy_df) < 100:
+        logger.warning("购买记录不足，无法进行有效的购物篮分析")
+        return None
+        
+    # 创建用户-商品购买矩阵
+    logger.info("创建用户-商品购买矩阵...")
+    
+    # 检查用户购买记录数量
+    user_purchase_counts = buy_df.groupby('user_id').size()
+    multi_purchase_users = user_purchase_counts[user_purchase_counts > 1].index
+    
+    if len(multi_purchase_users) < 10:
+        logger.warning("多次购买用户数量不足，无法进行有效的购物篮分析")
+        return None
+    
+    # 只保留有多次购买记录的用户
+    multi_buy_df = buy_df[buy_df['user_id'].isin(multi_purchase_users)]
+    
+    # 创建购物篮数据框（每个用户在不同日期的购买记录）
+    baskets = multi_buy_df.groupby(['user_id', 'date'])['item_id'].apply(list).reset_index()
+    
+    # 创建商品的独热编码
+    # 由于商品数量可能很多，这里选择频率较高的商品
+    top_items = buy_df['item_id'].value_counts().head(200).index
+    
+    # 创建每个购物篮内商品的独热编码矩阵
+    logger.info("创建独热编码矩阵...")
+    basket_sets = pd.DataFrame({'item_id': top_items})
+    basket_sets['item_present'] = 1
+    
+    # 创建空的独热编码结果
+    baskets_encoded = pd.DataFrame(0, index=range(len(baskets)), columns=top_items)
+    
+    # 填充独热编码
+    for i, row in enumerate(baskets['item_id']):
+        for item in row:
+            if item in top_items:
+                baskets_encoded.loc[i, item] = 1
+    
+    # 应用Apriori算法
+    logger.info("应用Apriori算法...")
+    try:
+        # 选择适当的最小支持度
+        min_support = 0.01
+        
+        # 应用Apriori算法找出频繁项集
+        frequent_itemsets = apriori(baskets_encoded, min_support=min_support, use_colnames=True)
+        
+        # 如果频繁项集过少，减小最小支持度
+        attempts = 0
+        while len(frequent_itemsets) < 10 and attempts < 3:
+            min_support = min_support / 2
+            logger.info(f"减小最小支持度到 {min_support}")
+            frequent_itemsets = apriori(baskets_encoded, min_support=min_support, use_colnames=True)
+            attempts += 1
+        
+        if len(frequent_itemsets) < 5:
+            logger.warning("发现的频繁项集过少，关联规则分析可能不具有统计意义")
+            return None
+        
+        # 生成关联规则
+        rules = association_rules(frequent_itemsets, metric="lift", min_threshold=1.0)
+        
+        # 按提升度排序
+        rules = rules.sort_values('lift', ascending=False)
+        
+        # 保存结果
+        if not rules.empty:
+            # 将item_id转换为可读形式
+            rules_readable = rules.copy()
+            rules_readable['antecedents'] = rules_readable['antecedents'].apply(lambda x: ', '.join(str(i) for i in x))
+            rules_readable['consequents'] = rules_readable['consequents'].apply(lambda x: ', '.join(str(i) for i in x))
+            
+            # 保存关联规则
+            rules_readable.to_csv(os.path.join(RESULT_DIR, 'tables', 'association_rules.csv'), index=False)
+            logger.info(f"找到 {len(rules)} 条关联规则")
+            
+            # 返回前20条关联规则
+            return rules.head(20)
+        else:
+            logger.warning("未发现有意义的关联规则")
+            return None
+    except Exception as e:
+        logger.error(f"关联规则挖掘失败: {e}")
+        return None
+    
 def load_data():
     """
     加载数据集
@@ -2900,6 +3001,85 @@ def basket_analysis(df):
         
     # 创建用户-商品购买矩阵
     logger.info("创建用户-商品购买矩阵...")
+    
+    # 检查用户购买记录数量
+    user_purchase_counts = buy_df.groupby('user_id').size()
+    multi_purchase_users = user_purchase_counts[user_purchase_counts > 1].index
+    
+    if len(multi_purchase_users) < 10:
+        logger.warning("多次购买用户数量不足，无法进行有效的购物篮分析")
+        return None
+    
+    # 只保留有多次购买记录的用户
+    multi_buy_df = buy_df[buy_df['user_id'].isin(multi_purchase_users)]
+    
+    # 创建购物篮数据框（每个用户在不同日期的购买记录）
+    baskets = multi_buy_df.groupby(['user_id', 'date'])['item_id'].apply(list).reset_index()
+    
+    # 创建商品的独热编码
+    # 由于商品数量可能很多，这里选择频率较高的商品
+    top_items = buy_df['item_id'].value_counts().head(200).index
+    
+    # 创建每个购物篮内商品的独热编码矩阵
+    logger.info("创建独热编码矩阵...")
+    basket_sets = pd.DataFrame({'item_id': top_items})
+    basket_sets['item_present'] = 1
+    
+    # 创建空的独热编码结果
+    baskets_encoded = pd.DataFrame(0, index=range(len(baskets)), columns=top_items)
+    
+    # 填充独热编码
+    for i, row in enumerate(baskets['item_id']):
+        for item in row:
+            if item in top_items:
+                baskets_encoded.loc[i, item] = 1
+    
+    # 应用Apriori算法
+    logger.info("应用Apriori算法...")
+    try:
+        # 选择适当的最小支持度
+        min_support = 0.01
+        
+        # 应用Apriori算法找出频繁项集
+        frequent_itemsets = apriori(baskets_encoded, min_support=min_support, use_colnames=True)
+        
+        # 如果频繁项集过少，减小最小支持度
+        attempts = 0
+        while len(frequent_itemsets) < 10 and attempts < 3:
+            min_support = min_support / 2
+            logger.info(f"减小最小支持度到 {min_support}")
+            frequent_itemsets = apriori(baskets_encoded, min_support=min_support, use_colnames=True)
+            attempts += 1
+        
+        if len(frequent_itemsets) < 5:
+            logger.warning("发现的频繁项集过少，关联规则分析可能不具有统计意义")
+            return None
+        
+        # 生成关联规则
+        rules = association_rules(frequent_itemsets, metric="lift", min_threshold=1.0)
+        
+        # 按提升度排序
+        rules = rules.sort_values('lift', ascending=False)
+        
+        # 保存结果
+        if not rules.empty:
+            # 将item_id转换为可读形式
+            rules_readable = rules.copy()
+            rules_readable['antecedents'] = rules_readable['antecedents'].apply(lambda x: ', '.join(str(i) for i in x))
+            rules_readable['consequents'] = rules_readable['consequents'].apply(lambda x: ', '.join(str(i) for i in x))
+            
+            # 保存关联规则
+            rules_readable.to_csv(os.path.join(RESULT_DIR, 'tables', 'association_rules.csv'), index=False)
+            logger.info(f"找到 {len(rules)} 条关联规则")
+            
+            # 返回前20条关联规则
+            return rules.head(20)
+        else:
+            logger.warning("未发现有意义的关联规则")
+            return None
+    except Exception as e:
+        logger.error(f"关联规则挖掘失败: {e}")
+        return None
     
     # 检查用户购买记录数量
     user_purchase_counts = buy_df.groupby('user_id').size()
