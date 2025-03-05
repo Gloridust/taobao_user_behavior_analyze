@@ -2185,8 +2185,31 @@ def predict_user_future_value(df, rfm_data):
     # 准备特征
     features = rfm_data[['recency', 'frequency', 'monetary']].copy()
     
+    # 确保user_id是可用的
+    if 'user_id' not in features.columns:
+        # 如果user_id是索引
+        if features.index.name == 'user_id' or features.index.name is None:
+            # 将索引重置为列
+            features = features.reset_index()
+            # 如果索引没有名称，则命名为user_id
+            if 'index' in features.columns and 'user_id' not in features.columns:
+                features = features.rename(columns={'index': 'user_id'})
+    
     # 计算当前用户价值（RFM总分）
-    current_value = rfm_data['rfm_score'].copy()
+    if 'rfm_score' in rfm_data.columns:
+        current_value = rfm_data['rfm_score'].copy()
+    else:
+        # 如果没有rfm_score列，则使用三个指标的简单组合
+        logger.warning("RFM数据中没有rfm_score列，使用简单组合作为当前价值")
+        # 确保是Series而不是DataFrame
+        if isinstance(rfm_data, pd.DataFrame):
+            if 'user_id' in rfm_data.columns:
+                rfm_data = rfm_data.set_index('user_id')
+            current_value = (5 - rfm_data['recency'].rank(pct=True) * 5 + 
+                          rfm_data['frequency'].rank(pct=True) * 5 + 
+                          rfm_data['monetary'].rank(pct=True) * 5)
+        else:
+            current_value = pd.Series(index=features['user_id'], data=0)
     
     # 添加更多用户行为特征
     user_behaviors = df.groupby('user_id')['behavior_type'].value_counts().unstack(fill_value=0)
@@ -2204,97 +2227,129 @@ def predict_user_future_value(df, rfm_data):
     user_behaviors['fav_to_buy_ratio'] = np.where(user_behaviors['buy'] > 0, 
                                                user_behaviors['fav'] / user_behaviors['buy'], 0)
     
-    # 合并RFM和行为特征
+    # 确保user_id可用于连接
     user_behaviors = user_behaviors.reset_index()
-    features = features.reset_index().set_index('user_id')
-    user_behaviors = user_behaviors.set_index('user_id')
-    merged_features = features.join(user_behaviors, how='left')
+    
+    # 合并RFM和行为特征
+    # 确保features有user_id列
+    if 'user_id' not in features.columns:
+        logger.error("无法在特征中找到user_id列，无法继续价值预测")
+        return None
+    
+    # 使用merge而不是join来避免索引问题
+    merged_features = pd.merge(features, user_behaviors, on='user_id', how='left')
     merged_features = merged_features.fillna(0)
     
-    # 移除user_id列(如果存在)
+    # 确保current_value有正确的索引以匹配merged_features
+    if isinstance(current_value, pd.Series):
+        if current_value.name != 'rfm_score':
+            current_value.name = 'rfm_score'
+        
+        # 如果current_value是Series且索引是user_id
+        if current_value.index.name == 'user_id':
+            current_value = current_value.reset_index()
+            # 确保merged_features和current_value有共同的用户
+            merged_features = pd.merge(merged_features, current_value, on='user_id', how='left')
+            current_value = merged_features['rfm_score'].fillna(0)
+        else:
+            # 如果不是，可能需要创建一个匹配的value列
+            logger.warning("无法确定current_value的正确索引，使用默认值")
+            current_value = pd.Series(index=merged_features.index, data=0)
+    
+    # 保存user_id列用于后续使用
+    user_ids = merged_features['user_id'].copy()
+    
+    # 移除user_id列(如果存在)，因为它不是一个特征
     if 'user_id' in merged_features.columns:
         merged_features = merged_features.drop('user_id', axis=1)
+    
+    # 移除rfm_score列(如果存在)，因为它是我们要预测的目标
+    if 'rfm_score' in merged_features.columns:
+        merged_features = merged_features.drop('rfm_score', axis=1)
     
     # 标准化特征
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(merged_features)
     
     # 分割训练集和测试集
-    X_train, X_test, y_train, y_test = train_test_split(
-        X_scaled, current_value, test_size=0.2, random_state=42)
-    
-    # 训练梯度提升回归模型
-    logger.info("训练用户价值预测模型...")
-    model = GradientBoostingRegressor(n_estimators=100, random_state=42)
-    model.fit(X_train, y_train)
-    
-    # 评估模型
-    y_pred = model.predict(X_test)
-    mse = mean_squared_error(y_test, y_pred)
-    r2 = r2_score(y_test, y_pred)
-    
-    logger.info(f"模型评估 - MSE: {mse:.4f}, R²: {r2:.4f}")
-    
-    # 计算特征重要性
-    feature_importance = pd.DataFrame({
-        'feature': merged_features.columns,
-        'importance': model.feature_importances_
-    }).sort_values('importance', ascending=False)
-    
-    # 预测所有用户的未来价值
-    all_predictions = model.predict(X_scaled)
-    
-    # 当前价值与预测价值的比较
-    value_comparison = pd.DataFrame({
-        'user_id': merged_features.index,
-        'current_value': current_value.values,
-        'predicted_value': all_predictions,
-        'growth_potential': all_predictions - current_value.values
-    })
-    
-    # 识别高潜力用户（预测价值增长最大的前10%）
-    high_potential_threshold = np.percentile(value_comparison['growth_potential'], 90)
-    value_comparison['high_potential'] = value_comparison['growth_potential'] >= high_potential_threshold
-    
-    # 保存结果
-    feature_importance.to_csv(os.path.join(RESULT_DIR, 'tables', 'value_feature_importance.csv'), index=False)
-    value_comparison.to_csv(os.path.join(RESULT_DIR, 'tables', 'user_value_prediction.csv'), index=False)
-    
-    # 可视化特征重要性
-    plt.figure(figsize=(12, 8))
-    top_features = feature_importance.head(10)
-    sns.barplot(x='importance', y='feature', data=top_features)
-    plt.title('用户价值预测的特征重要性Top10')
-    plt.tight_layout()
-    plt.savefig(os.path.join(RESULT_DIR, 'figures', 'value_feature_importance.png'), dpi=300)
-    plt.close()
-    
-    # 可视化当前价值与预测价值的散点图
-    plt.figure(figsize=(10, 8))
-    plt.scatter(value_comparison['current_value'], value_comparison['predicted_value'], 
-               alpha=0.5, c=value_comparison['high_potential'].map({True: 'red', False: 'blue'}))
-    
-    # 添加对角线
-    max_val = max(value_comparison['current_value'].max(), value_comparison['predicted_value'].max())
-    plt.plot([0, max_val], [0, max_val], 'k--')
-    
-    plt.xlabel('当前用户价值')
-    plt.ylabel('预测用户价值')
-    plt.title('用户价值预测分析')
-    
-    # 添加图例
-    plt.legend(['对角线', '高潜力用户', '普通用户'])
-    
-    plt.tight_layout()
-    plt.savefig(os.path.join(RESULT_DIR, 'figures', 'user_value_prediction.png'), dpi=300)
-    plt.close()
-    
-    return {
-        'feature_importance': feature_importance,
-        'value_comparison': value_comparison,
-        'model_metrics': {'mse': mse, 'r2': r2}
-    }
-
+    try:
+        X_train, X_test, y_train, y_test = train_test_split(
+            X_scaled, current_value, test_size=0.2, random_state=42)
+        
+        # 训练梯度提升回归模型
+        logger.info("训练用户价值预测模型...")
+        model = GradientBoostingRegressor(n_estimators=100, random_state=42)
+        model.fit(X_train, y_train)
+        
+        # 评估模型
+        y_pred = model.predict(X_test)
+        mse = mean_squared_error(y_test, y_pred)
+        r2 = r2_score(y_test, y_pred)
+        
+        logger.info(f"模型评估 - MSE: {mse:.4f}, R²: {r2:.4f}")
+        
+        # 计算特征重要性
+        feature_importance = pd.DataFrame({
+            'feature': merged_features.columns,
+            'importance': model.feature_importances_
+        }).sort_values('importance', ascending=False)
+        
+        # 预测所有用户的未来价值
+        all_predictions = model.predict(X_scaled)
+        
+        # 当前价值与预测价值的比较
+        value_comparison = pd.DataFrame({
+            'user_id': user_ids,
+            'current_value': current_value,
+            'predicted_value': all_predictions,
+            'growth_potential': all_predictions - current_value
+        })
+        
+        # 识别高潜力用户（预测价值增长最大的前10%）
+        high_potential_threshold = np.percentile(value_comparison['growth_potential'], 90)
+        value_comparison['high_potential'] = value_comparison['growth_potential'] >= high_potential_threshold
+        
+        # 保存结果
+        feature_importance.to_csv(os.path.join(RESULT_DIR, 'tables', 'value_feature_importance.csv'), index=False)
+        value_comparison.to_csv(os.path.join(RESULT_DIR, 'tables', 'user_value_prediction.csv'), index=False)
+        
+        # 可视化特征重要性
+        plt.figure(figsize=(12, 8))
+        top_features = feature_importance.head(10)
+        sns.barplot(x='importance', y='feature', data=top_features)
+        plt.title('用户价值预测的特征重要性Top10')
+        plt.tight_layout()
+        plt.savefig(os.path.join(RESULT_DIR, 'figures', 'value_feature_importance.png'), dpi=300)
+        plt.close()
+        
+        # 可视化当前价值与预测价值的散点图
+        plt.figure(figsize=(10, 8))
+        plt.scatter(value_comparison['current_value'], value_comparison['predicted_value'], 
+                   alpha=0.5, c=value_comparison['high_potential'].map({True: 'red', False: 'blue'}))
+        
+        # 添加对角线
+        max_val = max(value_comparison['current_value'].max(), value_comparison['predicted_value'].max())
+        plt.plot([0, max_val], [0, max_val], 'k--')
+        
+        plt.xlabel('当前用户价值')
+        plt.ylabel('预测用户价值')
+        plt.title('用户价值预测分析')
+        
+        # 添加图例
+        plt.legend(['对角线', '高潜力用户', '普通用户'])
+        
+        plt.tight_layout()
+        plt.savefig(os.path.join(RESULT_DIR, 'figures', 'user_value_prediction.png'), dpi=300)
+        plt.close()
+        
+        return {
+            'feature_importance': feature_importance,
+            'value_comparison': value_comparison,
+            'model_metrics': {'mse': mse, 'r2': r2}
+        }
+    except Exception as e:
+        logger.error(f"用户价值预测失败: {e}")
+        return None
 
 def perform_advanced_basket_analysis(df):
     """
