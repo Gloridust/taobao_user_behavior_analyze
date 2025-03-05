@@ -29,8 +29,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 import warnings
 
-# 解决中文显示问题
-plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
+# 使用用户确认可行的字体设置方式
+plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
 plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
 
 # 抑制警告信息
