@@ -30,7 +30,7 @@ from sklearn.metrics import classification_report
 import warnings
 
 # 使用用户确认可行的字体设置方式
-plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
 plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
 
 # 抑制警告信息
@@ -205,7 +205,7 @@ def analyze_user_behavior(df):
     behavior_distribution.to_csv('result/tables/behavior_distribution.csv', index=False)
     
     # 可视化行为分布
-    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
     plt.figure(figsize=(10, 6))
     sns.barplot(x='行为类型', y='数量', data=behavior_distribution)
     plt.title('用户行为分布')
@@ -219,7 +219,7 @@ def analyze_user_behavior(df):
     daily_behaviors.to_csv('result/tables/daily_behaviors.csv')
     
     # 可视化每日模式
-    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
     plt.figure(figsize=(14, 7))
     daily_behaviors.plot(figsize=(14, 7))
     plt.title('每日用户行为模式')
@@ -235,7 +235,7 @@ def analyze_user_behavior(df):
     hourly_behaviors.to_csv('result/tables/hourly_behaviors.csv')
     
     # 可视化小时模式
-    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
     plt.figure(figsize=(14, 7))
     hourly_behaviors.plot(figsize=(14, 7))
     plt.title('每小时用户行为模式')
@@ -256,7 +256,7 @@ def analyze_user_behavior(df):
     dow_behaviors.to_csv('result/tables/day_of_week_behaviors.csv')
     
     # 可视化星期几模式
-    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
     plt.figure(figsize=(14, 7))
     dow_behaviors.plot(kind='bar', figsize=(14, 7))
     plt.title('星期几用户行为模式')
@@ -300,7 +300,7 @@ def analyze_user_behavior(df):
     top_categories.to_csv('result/tables/top_categories.csv', index=False)
     
     # 可视化热门类目
-    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
     plt.figure(figsize=(14, 8))
     sns.barplot(x='category_id', y='count', data=top_categories)
     plt.title('前20个热门商品类目')
@@ -320,7 +320,7 @@ def analyze_user_behavior(df):
     purchase_frequency.to_csv('result/tables/purchase_frequency.csv', index=False)
     
     # 可视化购买频率
-    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
     plt.figure(figsize=(14, 7))
     sns.barplot(x='购买次数', y='用户数', data=purchase_frequency.head(20))
     plt.title('用户购买频率分布')
@@ -347,7 +347,7 @@ def analyze_user_behavior(df):
     engagement_distribution.to_csv('result/tables/user_engagement_distribution.csv', index=False)
     
     # 可视化参与度分布
-    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
     plt.figure(figsize=(12, 7))
     sns.barplot(x='参与度水平', y='用户数', data=engagement_distribution)
     plt.title('用户参与度水平分布')
@@ -387,7 +387,7 @@ def analyze_tmall_data(df):
     action_distribution.to_csv('result/tables/tmall_action_distribution.csv', index=False)
     
     # 可视化行为分布
-    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
     plt.figure(figsize=(10, 6))
     sns.barplot(x='行为类型', y='数量', data=action_distribution)
     plt.title('天猫用户行为分布')
@@ -401,7 +401,7 @@ def analyze_tmall_data(df):
     daily_actions.to_csv('result/tables/tmall_daily_actions.csv')
     
     # 可视化每日模式
-    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
     plt.figure(figsize=(14, 7))
     daily_actions.plot(figsize=(14, 7))
     plt.title('每日天猫用户行为模式')
@@ -417,7 +417,7 @@ def analyze_tmall_data(df):
     hourly_actions.to_csv('result/tables/tmall_hourly_actions.csv')
     
     # 可视化小时模式
-    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
     plt.figure(figsize=(14, 7))
     hourly_actions.plot(figsize=(14, 7))
     plt.title('每小时天猫用户行为模式')
@@ -438,7 +438,7 @@ def analyze_tmall_data(df):
     dow_actions.to_csv('result/tables/tmall_day_of_week_actions.csv')
     
     # 可视化星期几模式
-    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
     plt.figure(figsize=(14, 7))
     dow_actions.plot(kind='bar', figsize=(14, 7))
     plt.title('星期几天猫用户行为模式')
@@ -457,7 +457,7 @@ def analyze_tmall_data(df):
     interaction_stats.to_csv('result/tables/tmall_interaction_statistics.csv', index=False)
     
     # 可视化交互频率分布
-    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
     plt.figure(figsize=(12, 7))
     sns.histplot(user_item_interactions['interaction_count'], kde=True, bins=30)
     plt.title('用户-商品交互频率分布')
@@ -539,7 +539,7 @@ def user_segmentation(df):
     segment_counts = rfm_df['Segment'].value_counts().reset_index()
     segment_counts.columns = ['客户群体', '用户数']
     
-    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
     plt.figure(figsize=(14, 8))
     sns.barplot(x='客户群体', y='用户数', data=segment_counts)
     plt.title('用户分群分布')
@@ -607,7 +607,7 @@ def analyze_purchase_patterns(df):
         interval_stats.to_csv('result/tables/purchase_interval_statistics.csv', index=False)
         
         # 可视化购买间隔分布
-        plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+        plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
         plt.figure(figsize=(12, 7))
         sns.histplot(intervals_df['avg_interval_days'], kde=True, bins=30)
         plt.title('用户平均购买间隔分布')
@@ -628,7 +628,7 @@ def analyze_purchase_patterns(df):
     category_stats.to_csv('result/tables/user_category_statistics.csv', index=False)
     
     # 可视化用户购买品类数分布
-    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
     plt.figure(figsize=(12, 7))
     sns.countplot(data=user_categories, x='category_count')
     plt.title('用户购买品类数分布')
@@ -737,7 +737,7 @@ def analyze_user_journey(df):
     # 可视化前20个转换
     top_sequences = sequence_df.head(20)
     
-    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
     plt.figure(figsize=(14, 8))
     sns.barplot(x='first_behavior', y='probability', hue='next_behavior', data=top_sequences)
     plt.title('行为转换概率')
@@ -777,7 +777,7 @@ def analyze_user_journey(df):
     avg_time_diff.to_csv('result/tables/avg_time_between_behaviors.csv', index=False)
     
     # 可视化行为之间的时间
-    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
     plt.figure(figsize=(14, 8))
     sns.barplot(x='初始行为', y='平均时间(分钟)', hue='下一个行为', data=avg_time_diff.head(20))
     plt.title('用户行为之间的平均时间')
@@ -824,7 +824,7 @@ def category_analysis(df):
     if 'pv_to_buy_rate' in category_pivot.columns:
         category_conversion = category_pivot.reset_index()[['category_id', 'pv_to_buy_rate']].sort_values('pv_to_buy_rate', ascending=False)
         
-        plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+        plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
         plt.figure(figsize=(14, 8))
         sns.barplot(x='category_id', y='pv_to_buy_rate', data=category_conversion)
         plt.title('按类目的PV到购买转化率')
@@ -850,7 +850,7 @@ def category_analysis(df):
     
     top5_category_behavior = top_category_behavior[top_category_behavior['category_id'].isin(top5_categories)]
     
-    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
     plt.figure(figsize=(14, 8))
     sns.barplot(x='category_id', y='percentage', hue='behavior_type', data=top5_category_behavior)
     plt.title('前5个类目的行为分布')
@@ -916,7 +916,7 @@ def user_clustering(df):
         inertia.append(model.inertia_)
     
     # 可视化肘部法则
-    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
     plt.figure(figsize=(10, 6))
     plt.plot(k_range, inertia, 'o-')
     plt.title('K值选择的肘部法则')
@@ -962,7 +962,7 @@ def user_clustering(df):
         values = np.concatenate((values, [values[0]]))
         angles = np.concatenate((angles, [angles[0]]))
         
-        plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+        plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
         plt.polar(angles, values)
         plt.fill(angles, values, alpha=0.25)
         plt.title(f'聚类 {i} 特征')
@@ -975,7 +975,7 @@ def user_clustering(df):
     # 可视化聚类大小
     cluster_sizes = user_features['cluster'].value_counts().sort_index()
     
-    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
     plt.figure(figsize=(10, 6))
     cluster_sizes.plot(kind='bar')
     plt.title('各聚类的用户数量')
@@ -990,7 +990,7 @@ def user_clustering(df):
         user_features['buy_rate'] = user_features['buy'] / user_features['pv']
         cluster_conversion = user_features.groupby('cluster')['buy_rate'].mean().reset_index()
         
-        plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+        plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
         plt.figure(figsize=(10, 6))
         sns.barplot(x='cluster', y='buy_rate', data=cluster_conversion)
         plt.title('各聚类的平均购买转化率')
@@ -1120,7 +1120,7 @@ def build_prediction_model(df):
     feature_importance.to_csv('result/tables/feature_importance.csv', index=False)
     
     # 可视化特征重要性
-    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+    plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
     plt.figure(figsize=(10, 6))
     sns.barplot(x='importance', y='feature', data=feature_importance)
     plt.title('特征重要性')
@@ -1150,7 +1150,7 @@ def generate_combined_visualizations(df, tmall_df):
         behavior_counts['百分比'] = behavior_counts['频次'] / max_count * 100
         
         # 可视化转化漏斗
-        plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+        plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
         plt.figure(figsize=(12, 8))
         sns.barplot(x='行为', y='百分比', data=behavior_counts, order=behavior_order)
         plt.title('用户行为转化漏斗')
@@ -1206,7 +1206,7 @@ def generate_combined_visualizations(df, tmall_df):
         pivot_data = hourly_activity.pivot(index='hour', columns='date_str', values='count').fillna(0)
         
         # 绘制热图
-        plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Times New Roman']
+        plt.rcParams['font.family'] = ['Hei', 'Arial', 'Helvetica', 'Times New Roman']
         plt.figure(figsize=(15, 8))
         sns.heatmap(pivot_data, cmap='YlGnBu')
         plt.title('每日每小时用户活跃度热图')
