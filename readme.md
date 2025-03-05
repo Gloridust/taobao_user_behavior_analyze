@@ -4,7 +4,7 @@
 
 - [淘宝用户购物行为数据集 - 阿里天池 - UserBehavior](https://tianchi.aliyun.com/dataset/649)
 - [天猫推荐数据集Rec-Tmall - 阿里天池 - Tianchi_2014002_Rec_Tmall_Log](https://tianchi.aliyun.com/dataset/140281)
-- [淘宝用户购物行为数据分析项目数据集 - tb-behavior.txt](https://pan.baidu.com/s/1BIMmPmq16RaGVz3EDPU9Ag)
+- [淘宝用户购物行为数据分析项目数据集 - tb-behavior.txt](https://gitcode.com/open-source-toolkit/15c09/?utm_source=tools_gitcode&index=bottom&type=card&)
 
 ### 淘宝用户行为数据集概述
 
